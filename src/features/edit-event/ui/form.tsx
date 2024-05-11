@@ -1,31 +1,47 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { CreateEventSchema } from '@/shared/api';
-import Link from 'next/link';
+import { UpdateEventSchema } from '@/shared/api';
+import { useRouter } from 'next/router';
+import { useSearchParams } from 'next/navigation';
 
-type CreateEventFormProps = {
-  onSubmit: (data: CreateEventSchema) => void;
+type UpdateEventFormProps = {
+  defaultValues: UpdateEventSchema;
+  onSubmit: (data: UpdateEventSchema) => void;
 };
 
-export const CreateEventForm = ({ onSubmit }: CreateEventFormProps) => {
+export const UpdateEventForm = ({
+  onSubmit,
+  defaultValues,
+}: UpdateEventFormProps) => {
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<CreateEventSchema>({
-    resolver: zodResolver(CreateEventSchema),
+  } = useForm<UpdateEventSchema>({
+    resolver: zodResolver(UpdateEventSchema),
     mode: 'onChange',
+    defaultValues: {
+      ...defaultValues,
+      date: defaultValues.date.toISOString().slice(0, 10),
+    },
   });
 
+  const params = useSearchParams();
+  const eventId = params?.get('id');
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
+    <form
+      onSubmit={handleSubmit((data) =>
+        onSubmit({ ...data, id: Number(eventId) })
+      )}
+    >
       <div className='space-y-12'>
         <div>
           <h2 className='text-base font-semibold leading-7 text-gray-900'>
             Событие
           </h2>
           <p className='mt-1 text-sm leading-6 text-gray-600'>
-            Заполните форму для создания события
+            Заполните форму для редактирования события
           </p>
 
           <div className='mt-10 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6'>
@@ -104,17 +120,17 @@ export const CreateEventForm = ({ onSubmit }: CreateEventFormProps) => {
       </div>
 
       <div className='mt-6 flex items-center justify-end gap-x-6'>
-        <Link
-          href='/'
+        <button
+          type='button'
           className='text-sm font-semibold leading-6 text-gray-900'
         >
           Отмена
-        </Link>
+        </button>
         <button
           type='submit'
           className='rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600'
         >
-          Создать
+          Обновить
         </button>
       </div>
     </form>
